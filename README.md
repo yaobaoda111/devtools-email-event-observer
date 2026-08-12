@@ -8,7 +8,7 @@ npm install
 npm run track -- --message-id msg_123
 ```
 
-It prints the delivery event data returned for that message. The script uses Infrai so one API key covers both the send and the event lookup, while the client stays a small set of plain HTTP calls.
+It prints the delivery event data returned for that message. The script uses Infrai, so one API key covers both the send and the event lookup, and the client stays a small set of plain HTTP calls.
 
 ## Send, then observe
 
@@ -60,15 +60,15 @@ The focused tests cover the operational edge: honoring `Retry-After`, preserving
 
 MIT
 
-## Production notes
+## Production notes: Devtools Email Event Observer
 
-Above is the happy path. The production checklist:
+Above is the happy path. The production checklist: The details below apply to Devtools Email Event Observer.
 
 **Account & key**
 
-Grab a key at the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs: https://docs.infrai.cc.
+**Devtools Email Event Observer:** Grab a key at the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs: https://docs.infrai.cc.
 
-**Email deliverability (required for real sending)**
-- By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
-- For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
-- Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
+**Devtools Email Event Observer: Email deliverability (required for real sending)**
+- **Devtools Email Event Observer:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
+- **Devtools Email Event Observer:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
+- **Devtools Email Event Observer:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.

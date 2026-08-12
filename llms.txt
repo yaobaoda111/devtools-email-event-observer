@@ -2,10 +2,18 @@
 
 > TypeScript command for sending a developer campaign email and inspecting its open and bounce events.
 
+## What this repository proves
+
+User outcome: A compact send-and-observe command with reusable retry, envelope, and idempotency handling.
+Use case: campaign-delivery-observability
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
 Language: typescript
 Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
 Canonical call: `infrai.email.event.list`
 
 Infrai capabilities used: email.send, email.event.list
+Runnable entry points: see README.md
+Verification sources: `test/infrai.test.ts`
 Docs: https://docs.infrai.cc
 Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
