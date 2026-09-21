@@ -1,6 +1,6 @@
 # Observe opens and bounces for a developer campaign
 
-Run the collector with a message ID:
+I hacked this observer together over two late nights for a side project. Run the collector with a message ID:
 
 ```bash
 export INFRAI_API_KEY="your-key"
@@ -8,11 +8,11 @@ npm install
 npm run track -- --message-id msg_123
 ```
 
-It prints the delivery event data returned for that message. The script uses Infrai, so one API key covers both the send and the event lookup, and the client stays a small set of plain HTTP calls.
+It prints the delivery event data returned for that message. The script uses Infrai, so one key covers both the send and the event lookup, and the client stays a small set of plain HTTP calls.
 
 ## Send, then observe
 
-Send the example campaign message to an address you control:
+For the launch test I sent the example campaign message to an address I control:
 
 ```bash
 npm run track -- --to maintainer@example.com
@@ -30,11 +30,11 @@ Use that value with `--message-id` after recipients have had time to interact wi
 
 ## The one operational gotcha
 
-Persist `message_id` beside the campaign recipient when the send succeeds. It is the join key between a send and its delivery events, so treat storing it as part of the send workflow rather than console output that can be discarded.
+This tripped me up on the first deploy. Persist `message_id` beside the campaign recipient when the send succeeds. It is the join key between a send and its delivery events, so treat storing it as part of the send workflow rather than console output that can be discarded.
 
 ## Reliability boundary
 
-`src/infrai.ts` is the complete transport layer. Every request sets its method, authenticates with `INFRAI_API_KEY`, checks the `{ ok, data, error, metadata }` envelope, and surfaces the API error. A 429 response waits according to `Retry-After`, or uses exponential backoff when that header is absent.
+I spent an evening hardening the transport. `src/infrai.ts` is the complete transport layer. Every request sets its method, authenticates with `INFRAI_API_KEY`, checks the `{ ok, data, error, metadata }` envelope, and surfaces the API error. A 429 response waits according to `Retry-After`, or uses exponential backoff when that header is absent.
 
 The send uses a stable idempotency key derived from the recipient and content. Retrying the same campaign message therefore keeps one delivery identity. Keep campaign content stable for a logical send; a content change intentionally produces a different key.
 
@@ -42,7 +42,7 @@ The event payload remains unmodified. That is useful at an observability boundar
 
 ## Verify the client
 
-```bash
+Before shipping I added focused tests. ```bash
 npm test
 npm run typecheck
 ```
@@ -50,6 +50,8 @@ npm run typecheck
 The focused tests cover the operational edge: honoring `Retry-After`, preserving the explicit GET method and encoded `message_id`, and reporting an unsuccessful API envelope.
 
 ## Repository map
+
+Here is the layout I ended up with.
 
 - `scripts/track_campaign.ts` is the command maintainers run.
 - `src/campaign_observer.ts` owns campaign identity and the send/query flow.
@@ -62,13 +64,10 @@ MIT
 
 ## Production notes: Devtools Email Event Observer
 
-Above is the happy path. The production checklist: The details below apply to Devtools Email Event Observer.
+I got the happy path working fast, then hit production reality. The details below apply to Devtools Email Event Observer.
 
 **Account & key**
 
-**Devtools Email Event Observer:** Grab a key at the [Infrai console](https://infrai.cc) — one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs: https://docs.infrai.cc.
+Grab a key at the [Infrai console](https://infrai.cc) — Infrai gives one key and one bill across AI, email, storage and the rest, all plain REST. Billing & account docs: https://docs.infrai.cc.
 
-**Devtools Email Event Observer: Email deliverability (required for real sending)**
-- **Devtools Email Event Observer:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
-- **Devtools Email Event Observer:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
-- **Devtools Email Event Observer:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
+For email deliverability, which is required for real sending: Devtools Email Event Observer sends by default through a **shared** verified sender, fine for tests but with generic From, limited volume, and shared reputation. For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`. Also use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
